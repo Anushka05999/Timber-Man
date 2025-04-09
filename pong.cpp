@@ -1,5 +1,6 @@
 #include <SFML/Graphics.hpp>
 #include<sstream>
+#include<iostream>
 #include "Bat.h"
 #include"Ball.h"
 using namespace sf;
@@ -15,6 +16,8 @@ int main(){
 	View view(FloatRect(0,0,1920,1080));         //Calculates the coordinates according to the main resolution
 	window.setView(view);
 	
+	bool isPaused=false;
+	
 	int score=0;
 	int lives=3;
 
@@ -28,6 +31,11 @@ int main(){
 	hud.setCharacterSize(75);
 	hud.setFillColor(Color::White);
 	hud.setPosition(20,10);
+	Text obj;
+	obj.setFont(font);
+	obj.setCharacterSize(75);
+	obj.setFillColor(Color::White);
+	obj.setPosition(450,540);
 
 	Clock clock;
 
@@ -56,10 +64,40 @@ int main(){
 		else{
 			bat.stopRight();
 		}
+		if(ball.getPosition().left<0 || ball.getPosition().left + ball.getPosition().width>1920){
+			ball.reboundSides();
+			}
+		if(ball.getPosition().top<0){
+			ball.reboundBatOrTop();
+			}
+
+		if(ball.getPosition().intersects(bat.getPosition())){
+			ball.reboundBatOrTop();
+			score++;
+			}
+		if(ball.getPosition().top>1080){
+			ball.reboundBottom();
+			lives--;
+			if(lives<1){
+
+				std::stringstream s;
+				s<<"Game Over!!!";
+				obj.setString(s.str());
+
+				score=0;
+				lives=3;
+				
+				}
+			}
+		if(event.type==Event::KeyPressed && event.key.code==Keyboard::Space){
+			isPaused=!isPaused;
+			}
 
 		Time dt=clock.restart();	//update the delta time
-		bat.update(dt);
-		ball.update(dt);
+		if(!isPaused){
+			bat.update(dt);
+			ball.update(dt);}
+		
 		
 		std::stringstream ss;
 		ss<<"Score: "<<score<<"\nLives: "<<lives;
@@ -68,8 +106,18 @@ int main(){
 		//Draw
 		window.clear();
 		window.draw(hud);
+		window.draw(obj);
 		window.draw(bat.getShape());
 		window.draw(ball.getShape());
+		if(isPaused){
+			Text pause;
+			pause.setFont(font);
+			pause.setCharacterSize(75);
+			pause.setFillColor(Color::White);
+			pause.setString("Paused");
+			pause.setPosition(400,200);
+			window.draw(pause);
+			}
 		window.display();
 		}
 		}
