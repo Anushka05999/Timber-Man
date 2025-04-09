@@ -4,7 +4,7 @@ class Ball{
 	Vector2f m_Position;
 	CircleShape m_Shape;
 	
-	float m_Speed=700.0f;
+	float m_Speed=2000.0f;
 	float m_DirectionX=0.2f;//ball moves to tha right
 	float m_DirectionY=0.2f;//ball moves downward
 	public:
