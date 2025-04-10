@@ -17,6 +17,7 @@ int main(){
 	window.setView(view);
 	
 	bool isPaused=false;
+	bool isover=false;
 	
 	int score=0;
 	int lives=3;
@@ -78,25 +79,28 @@ int main(){
 		if(ball.getPosition().top>1080){
 			ball.reboundBottom();
 			lives--;
-			if(lives<1){
-
-				std::stringstream s;
-				s<<"Game Over!!!";
-				obj.setString(s.str());
-
-				score=0;
-				lives=3;
-				
+			if(lives < 1){
+				if(lives < 1){
+					std::stringstream s;
+					s << "Game Over!!!";
+					obj.setString(s.str());
+					isover = true; // ✅ Mark the game as over
+					lives=0;
 				}
+
+				}
+
 			}
-		if(event.type==Event::KeyPressed && event.key.code==Keyboard::Space){
+		if(Keyboard::isKeyPressed(Keyboard::Space)){
 			isPaused=!isPaused;
 			}
 
 		Time dt=clock.restart();	//update the delta time
-		if(!isPaused){
+		if(!isPaused && !isover){
 			bat.update(dt);
-			ball.update(dt);}
+			ball.update(dt);
+			}
+
 		
 		
 		std::stringstream ss;
@@ -115,7 +119,7 @@ int main(){
 			pause.setCharacterSize(75);
 			pause.setFillColor(Color::White);
 			pause.setString("Paused");
-			pause.setPosition(400,200);
+			pause.setPosition(900,540);
 			window.draw(pause);
 			}
 		window.display();
