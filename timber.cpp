@@ -1,46 +1,46 @@
-#include<SFML/Graphics.hpp>
-using namespace sf;
+#include<SFML/Graphics.hpp>//Includes SFML’s graphics module to draw sprites, text, shapes, etc.
+using namespace sf;//using namespace sf; avoids writing sf:: before every SFML class
 
-void updateBranches(int seed);
-const int NUM_BRANCHES = 6;
-Sprite branches[NUM_BRANCHES];
-enum class side
+void updateBranches(int seed);//updateBranches(int seed) is a function that moves branches down and adds a new random branch at the top.
+const int NUM_BRANCHES = 6;//NUM_BRANCHES defines how many branches we track on the tree.here we have taken 6 means there are 6 branches
+Sprite branches[NUM_BRANCHES];//branches is an array of SFML Sprites for each branch.
+enum class side//Defines which side a branch is on: LEFT, RIGHT, or NONE.
 {
 LEFT,
 RIGHT,
 NONE
 };
-side branchPositions[NUM_BRANCHES];
+side branchPositions[NUM_BRANCHES];//branchPositions stores the position for each branch (used for collision checks and drawing).
 
 
 int main(){
-VideoMode vm(1920, 1080);   //VideoMode ---> class
-RenderWindow window(vm,"TIMBER MAN GAME", Style::Fullscreen);   //RenderWindow ---> class
+VideoMode vm(1920, 1080);   //VideoMode ---> class ...VideoMode defines the window size (width × height).
+RenderWindow window(vm,"TIMBER MAN GAME", Style::Fullscreen);   //RenderWindow ---> class...RenderWindow creates a full-screen window with the given size and title.
 
-View view(FloatRect(0,0,1920,1080));
+View view(FloatRect(0,0,1920,1080));//Creates a “camera view” into the window....Here, it just matches the window size — useful if we want zooming or scrolling later
 window.setView(view);
 
 //Background
-Texture textureBackground;
+Texture textureBackground;//Load the background image from file into a Texture
 textureBackground.loadFromFile("graphics/background.png");
 Sprite spriteBackground;
-spriteBackground.setTexture(textureBackground);
-spriteBackground.setPosition(0,0); 
+spriteBackground.setTexture(textureBackground);//Sprite is the drawable object that uses the texture.
+spriteBackground.setPosition(0,0); //Positioned at (0,0) to cover the screen.
 
 //Tree
 Texture textureTree;
 textureTree.loadFromFile("graphics/tree.png");
 Sprite spriteTree;
 spriteTree.setTexture(textureTree);
-spriteTree.setPosition(810,0); 
+spriteTree.setPosition(810,0); //Loads the tree image and positions it near the middle of the screen.
 
 //Branches
 Texture textureBranch;
 textureBranch.loadFromFile("graphics/branch.png");
-for(int i=0;i<NUM_BRANCHES;i++){
+for(int i=0;i<NUM_BRANCHES;i++){//Loops to assign the texture to each branch sprite.
 branches[i].setTexture(textureBranch);
-branches[i].setPosition(1110,200);
-branches[i].setOrigin(0,0);
+branches[i].setPosition(1110,200);//Initial position is (1110,200);
+branches[i].setOrigin(0,0);// origin (0,0) is the top-left corner (rotation point)
 }
 
 //Bee
@@ -50,23 +50,23 @@ Sprite spriteBee;
 spriteBee.setTexture(textureBee);
 spriteBee.setPosition(0, 800); 
 
-bool beeActive=false;
-float beeSpeed=0.0f;
+bool beeActive=false;//beeActive tracks if the bee is currently moving.
+float beeSpeed=0.0f;//beeSpeed determines how fast it moves horizontally.
 
 
 //Clouds
 Texture textureCloud;
 textureCloud.loadFromFile("graphics/cloud.png");
-Sprite spriteCloud1, spriteCloud2, spriteCloud3;
+Sprite spriteCloud1, spriteCloud2, spriteCloud3;//Loads 3 clouds with different positions
 spriteCloud1.setTexture(textureCloud);
 spriteCloud2.setTexture(textureCloud);
 spriteCloud3.setTexture(textureCloud);
 spriteCloud1.setPosition(0,0); 
 spriteCloud2.setPosition(0,150); 
-spriteCloud2.setScale(0.5,0.5);
+spriteCloud2.setScale(0.5,0.5);//setScale(0.5,0.5) shrinks cloud2 for variety.
 spriteCloud3.setPosition(0,300); 
 
-bool cloud1Active=false;
+bool cloud1Active=false;//Track if each cloud is moving and its speed.
 float cloud1Speed=0.0f;
 
 bool cloud2Active=false;
@@ -80,18 +80,18 @@ Texture textureman;
 textureman.loadFromFile("graphics/player.png");
 Sprite spriteman;
 spriteman.setTexture(textureman);
-spriteman.setPosition(580,720);
+spriteman.setPosition(580,720);//Initial position is left side of the tree.
 
-side playerSide = side::LEFT;
+side playerSide = side::LEFT;//playerSide tracks which side the player is on.
 
 //Axe
 Texture textureaxe;
 textureaxe.loadFromFile("graphics/axe.png");
 Sprite spriteaxe;
 spriteaxe.setTexture(textureaxe);
-spriteaxe.setPosition(700,830);
+spriteaxe.setPosition(700,830);//Axe sprite positioned near player
 
-const float AXE_POSITION_LEFT = 700;
+const float AXE_POSITION_LEFT = 700;//Constants for left/right positions to easily move it with player.
 const float AXE_POSITION_RIGHT = 1075;
 
 //log
@@ -101,13 +101,13 @@ Sprite spritelog;
 spritelog.setTexture(texturelog);
 spritelog.setPosition(810,720);
 
-bool logActive = false;
-float logspeedX=1000;
+bool logActive = false;//logActive tracks if it’s currently moving.
+float logspeedX=1000;//logspeedX and logspeedY control log motion.
 float logspeedY=-1500;
-bool acceptInput=false;
+bool acceptInput=false;//acceptInput prevents multiple inputs during animation.
 
 //Gravestone
-Texture texturerip;
+Texture texturerip;//Displayed when the player dies. Static sprite.
 texturerip.loadFromFile("graphics/rip.png");
 Sprite spriterip;
 spriterip.setTexture(texturerip);
@@ -116,11 +116,11 @@ spriterip.setPosition(600,860);
 
 
                           
-Clock clock;
+Clock clock;//Clock measures delta time.
 
 
 //---timeBar code ---
-RectangleShape timeBar;     //timeBar---> Object
+RectangleShape timeBar;     //timeBar---> Object......RectangleShape is the red time bar.
 float timeBarStartWidth=400;
 float timeBarHeight=80;
 timeBar.setSize(Vector2f(timeBarStartWidth, timeBarHeight));
@@ -129,8 +129,8 @@ timeBar.setPosition((1920/2)-200, 980);
 
 //---starting timer, showing remianing time---
 Time gameTimeTotal;
-float timeRemaining=6.0f;
-float timeBarWidthPerSecond= timeBarStartWidth/timeRemaining;
+float timeRemaining=6.0f;//Shrinks as timeRemaining decreases.
+float timeBarWidthPerSecond= timeBarStartWidth/timeRemaining;//timeBarWidthPerSecond determines how much the bar shrinks per second.
 
 bool paused=true;
 int score=0;
@@ -138,7 +138,7 @@ int score=0;
 Text messageText;
 Text scoreText;
 
-Font font;       // font ---> Object 
+Font font;       // font ---> Object ....Loads font, sets text for messages and score, sizes, and colors.
 font.loadFromFile("font/KOMIKAP_.ttf");
 //setting font
 messageText.setFont(font);
